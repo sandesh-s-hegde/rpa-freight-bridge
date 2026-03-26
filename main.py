@@ -1,0 +1,24 @@
+from fastapi import FastAPI, Depends, status
+from schemas.payloads import CapacityRequest
+from services.uipath_client import UiPathService
+
+app = FastAPI(title="RPA Legacy Freight Bridge API", version="1.0.0")
+
+
+def get_uipath_service() -> UiPathService:
+    return UiPathService()
+
+
+@app.post("/api/v1/orchestrate", status_code=status.HTTP_202_ACCEPTED)
+async def trigger_legacy_booking(
+        request: CapacityRequest,
+        uipath_service: UiPathService = Depends(get_uipath_service)
+):
+    """Webhook endpoint to receive capacity shortages and trigger UiPath automation."""
+    success = await uipath_service.push_to_queue(request.model_dump(mode="json"))
+
+    return {
+        "status": "queued",
+        "transaction_id": request.transaction_id,
+        "uipath_acknowledged": success
+    }
