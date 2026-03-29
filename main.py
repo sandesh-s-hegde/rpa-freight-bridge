@@ -3,8 +3,17 @@ from schemas.payloads import CapacityRequest
 from services.uipath_client import UiPathService
 from core.exceptions import setup_exception_handlers
 from api.monitoring import router as monitoring_router
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="RPA Legacy Freight Bridge API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["POST", "GET"],
+    allow_headers=["*"],
+)
 
 setup_exception_handlers(app)
 app.include_router(monitoring_router)
