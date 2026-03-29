@@ -1,11 +1,19 @@
 from fastapi import FastAPI, Depends, status
-from schemas.payloads import CapacityRequest
-from services.uipath_client import UiPathService
-from core.exceptions import setup_exception_handlers
-from api.monitoring import router as monitoring_router
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="RPA Legacy Freight Bridge API", version="1.0.0")
+from api.monitoring import router as monitoring_router
+from core.exceptions import setup_exception_handlers
+from core.middleware import ProcessTimeMiddleware
+from core.security import verify_api_key
+from schemas.payloads import CapacityRequest
+from services.uipath_client import UiPathService
+
+app = FastAPI(
+    title="RPA Legacy Freight Bridge API",
+    version="1.0.0",
+    docs_url="/api/docs",
+    redoc_url=None
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,19 +22,23 @@ app.add_middleware(
     allow_methods=["POST", "GET"],
     allow_headers=["*"],
 )
+app.add_middleware(ProcessTimeMiddleware)
 
 setup_exception_handlers(app)
 app.include_router(monitoring_router)
 
-
 def get_uipath_service() -> UiPathService:
     return UiPathService()
 
-
-@app.post("/api/v1/orchestrate", status_code=status.HTTP_202_ACCEPTED, tags=["Orchestration"])
+@app.post(
+    "/api/v1/orchestrate",
+    status_code=status.HTTP_202_ACCEPTED,
+    tags=["Orchestration"],
+    dependencies=[Depends(verify_api_key)]
+)
 async def trigger_legacy_booking(
-        request: CapacityRequest,
-        uipath_service: UiPathService = Depends(get_uipath_service)
+    request: CapacityRequest,
+    uipath_service: UiPathService = Depends(get_uipath_service)
 ):
     success = await uipath_service.push_to_queue(request.model_dump(mode="json"))
 
