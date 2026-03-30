@@ -1,0 +1,16 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[project]
+name = "rpa-freight-bridge"
+version = "1.0.0"
+description = "FastAPI bridge for UiPath legacy logistics automation"
+authors = [{name = "Sandesh Hegde"}]
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "pydantic",
+    "pydantic-settings"
+]
