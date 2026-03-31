@@ -5,13 +5,26 @@ from api.monitoring import router as monitoring_router
 from core.exceptions import setup_exception_handlers
 from core.middleware import ProcessTimeMiddleware
 from core.security import verify_api_key
+from core.constants import ApiVersion
 from schemas.payloads import CapacityRequest
 from services.uipath_client import UiPathService
+
+tags_metadata = [
+    {
+        "name": "Orchestration",
+        "description": "Core logic for bridging AI analytics with legacy RPA workers.",
+    },
+    {
+        "name": "System",
+        "description": "Operational telemetry and health monitoring.",
+    },
+]
 
 app = FastAPI(
     title="RPA Legacy Freight Bridge API",
     version="1.0.0",
-    docs_url="/api/docs",
+    openapi_tags=tags_metadata,
+    docs_url=f"{ApiVersion.V1}/docs",
     redoc_url=None
 )
 
