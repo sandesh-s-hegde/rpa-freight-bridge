@@ -40,11 +40,11 @@ app.add_middleware(ProcessTimeMiddleware)
 setup_exception_handlers(app)
 app.include_router(monitoring_router)
 
-def get_uipath_service() -> UiPathService:
+async def get_uipath_service() -> UiPathService:
     return UiPathService()
 
 @app.post(
-    "/api/v1/orchestrate",
+    f"{ApiVersion.V1}/orchestrate",
     status_code=status.HTTP_202_ACCEPTED,
     tags=["Orchestration"],
     dependencies=[Depends(verify_api_key)]
