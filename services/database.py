@@ -1,9 +1,16 @@
-import logging
-from schemas.payloads import CapacityRequest
+import os
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.orm import declarative_base
 
-logger = logging.getLogger("rpa-bridge")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/rpa_bridge"
+)
 
-class TransactionAuditService:
-    @staticmethod
-    async def log_request(request: CapacityRequest, status: str) -> None:
-        logger.info(f"Auditing Transaction: {request.transaction_id} | Status: {status}")
+engine = create_async_engine(DATABASE_URL, echo=False)
+AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+Base = declarative_base()
+
+async def get_db_session():
+    async with AsyncSessionLocal() as session:
+        yield session
