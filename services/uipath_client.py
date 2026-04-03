@@ -1,10 +1,14 @@
 import os
+import time
 import httpx
 from fastapi import HTTPException, status
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 
 class UiPathService:
+    _token_cache: str | None = None
+    _token_expires_at: float = 0.0
+
     def __init__(self):
         self.base_url = os.getenv("UIPATH_BASE_URL")
         self.client_id = os.getenv("UIPATH_CLIENT_ID")
@@ -15,6 +19,9 @@ class UiPathService:
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def _get_access_token(self) -> str:
+        if self._token_cache and time.time() < self._token_expires_at:
+            return self._token_cache
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 self.auth_url,
@@ -26,7 +33,12 @@ class UiPathService:
                 }
             )
             response.raise_for_status()
-            return response.json().get("access_token")
+            data = response.json()
+
+            self.__class__._token_cache = data.get("access_token")
+            self.__class__._token_expires_at = time.time() + data.get("expires_in", 3600) - 60
+
+            return self._token_cache
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def push_to_queue(self, payload: dict) -> bool:
