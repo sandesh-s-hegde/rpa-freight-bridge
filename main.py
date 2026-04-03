@@ -1,7 +1,8 @@
-from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, status, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
+from contextlib import asynccontextmanager
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from api.monitoring import router as monitoring_router
 from core.database import engine, Base, get_db_session
@@ -34,18 +35,14 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["POST", "GET"],
-    allow_headers=["*"],
-)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 app.add_middleware(ProcessTimeMiddleware)
 
 setup_exception_handlers(app)
 setup_rate_limiting(app)
 app.include_router(monitoring_router)
+
+Instrumentator().instrument(app).expose(app)
 
 def get_uipath_service() -> UiPathService:
     return UiPathService()
