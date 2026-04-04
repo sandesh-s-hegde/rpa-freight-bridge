@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from models.transaction import TransactionAudit
 from schemas.payloads import CapacityRequest
 
@@ -18,3 +19,13 @@ class AuditRepository:
         await self.db.commit()
         await self.db.refresh(record)
         return record
+
+    async def get_by_transaction_id(self, transaction_id: str) -> TransactionAudit | None:
+        stmt = select(TransactionAudit).where(TransactionAudit.transaction_id == transaction_id)
+        result = await self.db.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_recent_audits(self, limit: int = 50, offset: int = 0):
+        stmt = select(TransactionAudit).order_by(TransactionAudit.created_at.desc()).limit(limit).offset(offset)
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
