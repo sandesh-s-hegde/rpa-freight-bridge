@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from api.monitoring import router as monitoring_router
+from api.audit import router as audit_router
 from core.database import engine, Base, get_db_session
 from core.exceptions import setup_exception_handlers
 from core.middleware import ProcessTimeMiddleware
@@ -17,6 +18,7 @@ from services.orchestrator import OrchestrationService
 
 tags_metadata = [
     {"name": "Orchestration", "description": "Core logic for bridging AI analytics with legacy RPA workers."},
+    {"name": "Audit", "description": "Transaction history and paginated idempotency logs."},
     {"name": "System", "description": "Operational telemetry and health monitoring."},
 ]
 
@@ -35,18 +37,14 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 app.add_middleware(ProcessTimeMiddleware)
 
 setup_exception_handlers(app)
 setup_rate_limiting(app)
+
 app.include_router(monitoring_router)
+app.include_router(audit_router)
 
 Instrumentator().instrument(app).expose(app)
 
