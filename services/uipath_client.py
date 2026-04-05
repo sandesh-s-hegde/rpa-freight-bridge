@@ -1,8 +1,8 @@
 import os
 import time
-import httpx
 from fastapi import HTTPException, status
 from tenacity import retry, stop_after_attempt, wait_exponential
+from core.http_client import HttpClient
 
 
 class UiPathService:
@@ -22,23 +22,23 @@ class UiPathService:
         if self._token_cache and time.time() < self._token_expires_at:
             return self._token_cache
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                self.auth_url,
-                data={
-                    "grant_type": "client_credentials",
-                    "client_id": self.client_id,
-                    "client_secret": self.client_secret,
-                    "scope": "OR.Queues OR.Queues.Write"
-                }
-            )
-            response.raise_for_status()
-            data = response.json()
+        client = HttpClient.get_client()
+        response = await client.post(
+            self.auth_url,
+            data={
+                "grant_type": "client_credentials",
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "scope": "OR.Queues OR.Queues.Write"
+            }
+        )
+        response.raise_for_status()
+        data = response.json()
 
-            self.__class__._token_cache = data.get("access_token")
-            self.__class__._token_expires_at = time.time() + data.get("expires_in", 3600) - 60
+        self.__class__._token_cache = data.get("access_token")
+        self.__class__._token_expires_at = time.time() + data.get("expires_in", 3600) - 60
 
-            return self._token_cache
+        return self._token_cache
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def push_to_queue(self, payload: dict) -> bool:
@@ -59,7 +59,7 @@ class UiPathService:
             }
         }
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(endpoint, headers=headers, json=data)
-            response.raise_for_status()
-            return response.status_code == 201
+        client = HttpClient.get_client()
+        response = await client.post(endpoint, headers=headers, json=data)
+        response.raise_for_status()
+        return response.status_code == 201
