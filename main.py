@@ -12,6 +12,7 @@ from core.middleware import ProcessTimeMiddleware
 from core.rate_limit import limiter, setup_rate_limiting
 from core.security import verify_api_key
 from core.constants import ApiVersion
+from core.http_client import HttpClient
 from schemas.payloads import CapacityRequest
 from services.uipath_client import UiPathService
 from services.orchestrator import OrchestrationService
@@ -26,7 +27,9 @@ tags_metadata = [
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    HttpClient.get_client()
     yield
+    await HttpClient.close_client()
 
 app = FastAPI(
     title="RPA Legacy Freight Bridge API",
