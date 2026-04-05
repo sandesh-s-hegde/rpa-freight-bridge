@@ -124,13 +124,15 @@ If you reference this architectural pattern, please cite it as follows:
 
 ## 🔮 Roadmap & Project Status
 
-| Phase | Maturity Level | Key Capabilities                                      | Status |
-| ----- | -------------- | ----------------------------------------------------- | ------ |
-| Phase 1 | Scripting      | Basic synchronous API calls to UiPath                 | ✅ Done |
-| Phase 2 | Orchestration  | FastAPI webhooks, Pydantic validation, OAuth          | ✅ Done |
-| Phase 3 | Persistence    | Async PostgreSQL, Idempotency, Repository Layer       | ✅ Done |
-| Phase 4 | Enterprise     | Prometheus metrics, Connection Pooling, Rate Limiting | ✅ **Stable (v1.0)** |
-| Phase 5 | Execution      | UiPath REFramework Unattended Robot Development       | 🚧 Next |
+This project is structured for incremental enterprise scale, moving from a foundational one-way API to a fully cognitive, distributed event-driven ecosystem.
+
+| Phase | Maturity Level | Key Capabilities | Status |
+| :--- | :--- | :--- | :--- |
+| **Phase 1** | **Foundation (v1.0)** | **Async API Gateway, Idempotent PostgreSQL persistence, Connection Pooling, Telemetry, and 1-Way Queue Dispatch.** | ✅ **Stable** |
+| **Phase 2** | **Closed-Loop Execution** | Bidirectional webhooks. The RPA bot reports final confirmation IDs back to the FastAPI gateway to update the AI's state. | 🚧 Next |
+| **Phase 3** | **Multi-Tenant Dispatch** | "Factory Pattern" routing. The API dynamically routes payloads to different dedicated UiPath queues based on the `carrier_name`. | 🚧 Planned |
+| **Phase 4** | **Cognitive Processing (IDP)** | Integration with UiPath Document Understanding/OCR to ingest unstructured legacy PDF invoices and email bookings. | 💡 Vision |
+| **Phase 5** | **Event Streaming** | Migration from background tasks to Apache Kafka / AWS SQS for high-availability, globally distributed webhook ingestion. | 💡 Vision |
 
 ---
 
