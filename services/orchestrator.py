@@ -1,6 +1,7 @@
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from schemas.payloads import CapacityRequest
+from schemas.callbacks import RpaCallbackPayload
 from services.uipath_client import UiPathService
 from repositories.audit_repository import AuditRepository
 
@@ -19,3 +20,18 @@ class OrchestrationService:
 
         success = await self.uipath.push_to_queue(request.model_dump(mode="json"))
         await self.repository.create_audit_record(request, success)
+
+    async def process_rpa_callback(self, payload: RpaCallbackPayload) -> bool:
+        existing = await self.repository.get_by_transaction_id(payload.transaction_id)
+        if not existing:
+            logger.error(f"Callback received for unknown transaction: {payload.transaction_id}")
+            return False
+
+        await self.repository.update_transaction_state(
+            transaction_id=payload.transaction_id,
+            status=payload.status,
+            confirmation_id=payload.confirmation_id,
+            error_message=payload.error_message
+        )
+        logger.info(f"Transaction {payload.transaction_id} updated to {payload.status}")
+        return True
