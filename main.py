@@ -1,3 +1,4 @@
+from api.callbacks import router as callback_router
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends, status, Request, BackgroundTasks
@@ -54,6 +55,7 @@ setup_rate_limiting(app)
 
 app.include_router(monitoring_router)
 app.include_router(audit_router)
+app.include_router(callback_router)
 
 Instrumentator().instrument(app).expose(app)
 
