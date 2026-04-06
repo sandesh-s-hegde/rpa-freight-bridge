@@ -10,4 +10,8 @@ class TransactionAudit(Base):
     vehicle_type = Column(String, nullable=False)
     max_budget_eur = Column(Float, nullable=False)
     uipath_acknowledged = Column(Boolean, default=False)
+    status = Column(String, default="queued", index=True)
+    confirmation_id = Column(String, nullable=True)
+    error_message = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
