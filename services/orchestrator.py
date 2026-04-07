@@ -4,6 +4,7 @@ from schemas.payloads import CapacityRequest
 from schemas.callbacks import RpaCallbackPayload
 from services.uipath_client import UiPathService
 from repositories.audit_repository import AuditRepository
+from core.routing import CarrierRouter
 
 logger = logging.getLogger("rpa-bridge")
 
@@ -18,7 +19,13 @@ class OrchestrationService:
             logger.warning(f"Idempotency block: Transaction {request.transaction_id} already processed.")
             return
 
-        success = await self.uipath.push_to_queue(request.model_dump(mode="json"))
+        target_queue = CarrierRouter.resolve_queue(request.carrier_name)
+        logger.info(f"Routing transaction {request.transaction_id} to designated queue: {target_queue}")
+
+        success = await self.uipath.push_to_queue(
+            payload=request.model_dump(mode="json"),
+            target_queue=target_queue
+        )
         await self.repository.create_audit_record(request, success)
 
     async def process_rpa_callback(self, payload: RpaCallbackPayload) -> bool:
