@@ -14,7 +14,6 @@ class UiPathService:
         self.client_id = os.getenv("UIPATH_CLIENT_ID")
         self.client_secret = os.getenv("UIPATH_CLIENT_SECRET")
         self.folder_id = os.getenv("UIPATH_FOLDER_ID")
-        self.queue_name = os.getenv("UIPATH_QUEUE_NAME")
         self.auth_url = "https://cloud.uipath.com/identity_/connect/token"
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
@@ -41,7 +40,7 @@ class UiPathService:
         return self._token_cache
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-    async def push_to_queue(self, payload: dict) -> bool:
+    async def push_to_queue(self, payload: dict, target_queue: str) -> bool:
         token = await self._get_access_token()
         endpoint = f"{self.base_url}/odata/Queues/UiPathODataSvc.AddQueueItem"
 
@@ -53,7 +52,7 @@ class UiPathService:
 
         data = {
             "itemData": {
-                "Name": self.queue_name,
+                "Name": target_queue,
                 "Priority": "High",
                 "SpecificContent": payload
             }
