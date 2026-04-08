@@ -13,5 +13,6 @@ class TransactionAudit(Base):
     status = Column(String, default="queued", index=True)
     confirmation_id = Column(String, nullable=True)
     error_message = Column(String, nullable=True)
+    is_dlq = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

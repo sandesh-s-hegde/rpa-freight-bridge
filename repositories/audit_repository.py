@@ -39,3 +39,20 @@ class AuditRepository:
         )
         await self.db.execute(stmt)
         await self.db.commit()
+
+    async def update_transaction_state(self, transaction_id: str, status: str, confirmation_id: str | None = None,
+                                       error_message: str | None = None) -> None:
+        is_dlq = True if status == "failed" else False
+
+        stmt = (
+            update(TransactionAudit)
+            .where(TransactionAudit.transaction_id == transaction_id)
+            .values(
+                status=status,
+                confirmation_id=confirmation_id,
+                error_message=error_message,
+                is_dlq=is_dlq
+            )
+        )
+        await self.db.execute(stmt)
+        await self.db.commit()
