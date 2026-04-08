@@ -5,8 +5,10 @@ from schemas.callbacks import RpaCallbackPayload
 from services.uipath_client import UiPathService
 from repositories.audit_repository import AuditRepository
 from core.routing import CarrierRouter
+from core.metrics import RPA_TASKS_DISPATCHED, RPA_TASKS_COMPLETED
 
 logger = logging.getLogger("rpa-bridge")
+
 
 class OrchestrationService:
     def __init__(self, db: AsyncSession, uipath_client: UiPathService):
@@ -28,6 +30,10 @@ class OrchestrationService:
         )
         await self.repository.create_audit_record(request, success)
 
+        # Increment custom Prometheus metric
+        if success:
+            RPA_TASKS_DISPATCHED.labels(carrier_name=request.carrier_name).inc()
+
     async def process_rpa_callback(self, payload: RpaCallbackPayload) -> bool:
         existing = await self.repository.get_by_transaction_id(payload.transaction_id)
         if not existing:
@@ -41,4 +47,7 @@ class OrchestrationService:
             error_message=payload.error_message
         )
         logger.info(f"Transaction {payload.transaction_id} updated to {payload.status}")
+
+        # Increment custom Prometheus metric
+        RPA_TASKS_COMPLETED.labels(status=payload.status).inc()
         return True
