@@ -1,9 +1,10 @@
 import os
 import time
-from fastapi import HTTPException, status
-from tenacity import retry, stop_after_attempt, wait_exponential
-from core.http_client import HttpClient
 
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+from core.circuit_breaker import uipath_circuit_breaker
+from core.http_client import HttpClient
 
 class UiPathService:
     _token_cache: str | None = None
@@ -39,6 +40,7 @@ class UiPathService:
 
         return self._token_cache
 
+    @uipath_circuit_breaker
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def push_to_queue(self, payload: dict, target_queue: str) -> bool:
         token = await self._get_access_token()
