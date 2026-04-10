@@ -28,8 +28,14 @@ class AuditRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_recent_audits(self, limit: int = 50, offset: int = 0):
-        stmt = select(TransactionAudit).order_by(TransactionAudit.created_at.desc()).limit(limit).offset(offset)
+    async def get_recent_audits(self, limit: int = 50, cursor: str | None = None):
+        stmt = select(TransactionAudit).order_by(TransactionAudit.created_at.desc(),
+                                                 TransactionAudit.transaction_id.desc())
+
+        if cursor:
+            stmt = stmt.where(TransactionAudit.transaction_id < cursor)
+
+        stmt = stmt.limit(limit)
         result = await self.db.execute(stmt)
         return result.scalars().all()
 
