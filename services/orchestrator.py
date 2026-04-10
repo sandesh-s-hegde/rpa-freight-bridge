@@ -18,15 +18,18 @@ class OrchestrationService:
     async def process_booking_request(self, request: CapacityRequest) -> None:
         existing = await self.repository.get_by_transaction_id(request.transaction_id)
         if existing:
-            logger.warning(f"Idempotency block: Transaction {request.transaction_id} already processed.")
+            logger.warning(
+                f"Idempotency block: Transaction {request.transaction_id} already processed."
+            )
             return
 
         target_queue = CarrierRouter.resolve_queue(request.carrier_name)
-        logger.info(f"Routing transaction {request.transaction_id} to designated queue: {target_queue}")
+        logger.info(
+            f"Routing transaction {request.transaction_id} to designated queue: {target_queue}"
+        )
 
         success = await self.uipath.push_to_queue(
-            payload=request.model_dump(mode="json"),
-            target_queue=target_queue
+            payload=request.model_dump(mode="json"), target_queue=target_queue
         )
         await self.repository.create_audit_record(request, success)
 
@@ -37,17 +40,18 @@ class OrchestrationService:
     async def process_rpa_callback(self, payload: RpaCallbackPayload) -> bool:
         existing = await self.repository.get_by_transaction_id(payload.transaction_id)
         if not existing:
-            logger.error(f"Callback received for unknown transaction: {payload.transaction_id}")
+            logger.error(
+                f"Callback received for unknown transaction: {payload.transaction_id}"
+            )
             return False
 
         await self.repository.update_transaction_state(
             transaction_id=payload.transaction_id,
             status=payload.status,
             confirmation_id=payload.confirmation_id,
-            error_message=payload.error_message
+            error_message=payload.error_message,
         )
         logger.info(f"Transaction {payload.transaction_id} updated to {payload.status}")
 
-        # Increment custom Prometheus metric
         RPA_TASKS_COMPLETED.labels(status=payload.status).inc()
         return True

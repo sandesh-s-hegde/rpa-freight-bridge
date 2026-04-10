@@ -28,7 +28,7 @@ def get_logger(name: str = "rpa-bridge") -> logging.Logger:
         handler = logging.StreamHandler(sys.stdout)
         formatter = PiiRedactingFormatter(
             "%(asctime)s %(name)s %(levelname)s %(correlation_id)s %(message)s",
-            rename_fields={"levelname": "level", "asctime": "timestamp"}
+            rename_fields={"levelname": "level", "asctime": "timestamp"},
         )
         handler.setFormatter(formatter)
         handler.addFilter(CorrelationIdFilter())

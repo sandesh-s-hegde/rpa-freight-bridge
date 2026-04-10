@@ -8,7 +8,9 @@ class AuditRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create_audit_record(self, request: CapacityRequest, acknowledged: bool) -> TransactionAudit:
+    async def create_audit_record(
+        self, request: CapacityRequest, acknowledged: bool
+    ) -> TransactionAudit:
         record = TransactionAudit(
             transaction_id=request.transaction_id,
             carrier_name=request.carrier_name,
@@ -16,21 +18,26 @@ class AuditRepository:
             max_budget_eur=request.max_budget_eur,
             uipath_acknowledged=acknowledged,
             status="processing" if acknowledged else "failed",
-            is_dlq=not acknowledged
+            is_dlq=not acknowledged,
         )
         self.db.add(record)
         await self.db.commit()
         await self.db.refresh(record)
         return record
 
-    async def get_by_transaction_id(self, transaction_id: str) -> TransactionAudit | None:
-        stmt = select(TransactionAudit).where(TransactionAudit.transaction_id == transaction_id)
+    async def get_by_transaction_id(
+        self, transaction_id: str
+    ) -> TransactionAudit | None:
+        stmt = select(TransactionAudit).where(
+            TransactionAudit.transaction_id == transaction_id
+        )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_recent_audits(self, limit: int = 50, cursor: str | None = None):
-        stmt = select(TransactionAudit).order_by(TransactionAudit.created_at.desc(),
-                                                 TransactionAudit.transaction_id.desc())
+        stmt = select(TransactionAudit).order_by(
+            TransactionAudit.created_at.desc(), TransactionAudit.transaction_id.desc()
+        )
 
         if cursor:
             stmt = stmt.where(TransactionAudit.transaction_id < cursor)
@@ -39,8 +46,13 @@ class AuditRepository:
         result = await self.db.execute(stmt)
         return result.scalars().all()
 
-    async def update_transaction_state(self, transaction_id: str, status: str, confirmation_id: str | None = None,
-                                       error_message: str | None = None) -> None:
+    async def update_transaction_state(
+        self,
+        transaction_id: str,
+        status: str,
+        confirmation_id: str | None = None,
+        error_message: str | None = None,
+    ) -> None:
         is_dlq = True if status == "failed" else False
 
         stmt = (
@@ -50,7 +62,7 @@ class AuditRepository:
                 status=status,
                 confirmation_id=confirmation_id,
                 error_message=error_message,
-                is_dlq=is_dlq
+                is_dlq=is_dlq,
             )
         )
         await self.db.execute(stmt)

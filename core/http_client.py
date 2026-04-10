@@ -1,6 +1,7 @@
 import httpx
 from typing import Optional
 
+
 class HttpClient:
     client: Optional[httpx.AsyncClient] = None
 
@@ -9,7 +10,7 @@ class HttpClient:
         if cls.client is None:
             cls.client = httpx.AsyncClient(
                 timeout=30.0,
-                limits=httpx.Limits(max_keepalive_connections=50, max_connections=100)
+                limits=httpx.Limits(max_keepalive_connections=50, max_connections=100),
             )
         return cls.client
 

@@ -6,6 +6,7 @@ from core.database import get_db_session
 
 router = APIRouter(prefix="/api/v1/system", tags=["System"])
 
+
 @router.get("/health", status_code=status.HTTP_200_OK)
 async def health_check(db: AsyncSession = Depends(get_db_session)):
     db_status = "unhealthy"
@@ -19,7 +20,5 @@ async def health_check(db: AsyncSession = Depends(get_db_session)):
         "status": "operational" if db_status == "operational" else "degraded",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "component": "rpa-freight-bridge",
-        "dependencies": {
-            "database": db_status
-        }
+        "dependencies": {"database": db_status},
     }

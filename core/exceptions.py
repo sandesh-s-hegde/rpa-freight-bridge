@@ -7,9 +7,12 @@ from core.context import correlation_id_ctx
 
 logger = logging.getLogger("rpa-bridge")
 
+
 def setup_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    async def validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ):
         logger.warning(f"Validation Error: {exc.errors()}")
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -20,8 +23,8 @@ def setup_exception_handlers(app: FastAPI) -> None:
                 "detail": "The request payload failed strict schema validation.",
                 "instance": request.url.path,
                 "trace_id": correlation_id_ctx.get(),
-                "errors": exc.errors()
-            }
+                "errors": exc.errors(),
+            },
         )
 
     @app.exception_handler(SQLAlchemyError)
@@ -35,8 +38,8 @@ def setup_exception_handlers(app: FastAPI) -> None:
                 "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
                 "detail": "The system encountered a fatal error communicating with the persistence layer.",
                 "instance": request.url.path,
-                "trace_id": correlation_id_ctx.get()
-            }
+                "trace_id": correlation_id_ctx.get(),
+            },
         )
 
     @app.exception_handler(Exception)
@@ -50,6 +53,6 @@ def setup_exception_handlers(app: FastAPI) -> None:
                 "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
                 "detail": "An unexpected system fault occurred.",
                 "instance": request.url.path,
-                "trace_id": correlation_id_ctx.get()
-            }
+                "trace_id": correlation_id_ctx.get(),
+            },
         )

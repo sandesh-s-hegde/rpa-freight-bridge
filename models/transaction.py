@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from sqlalchemy import Column, String, Float, DateTime, Boolean
 from core.database import Base
 
+
 class TransactionAudit(Base):
     __tablename__ = "transaction_audit"
 
@@ -14,5 +15,11 @@ class TransactionAudit(Base):
     confirmation_id = Column(String, nullable=True)
     error_message = Column(String, nullable=True)
     is_dlq = Column(Boolean, default=False, index=True)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )

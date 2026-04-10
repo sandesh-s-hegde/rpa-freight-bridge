@@ -1,6 +1,7 @@
 from datetime import date
 from pydantic import BaseModel, Field
 
+
 class CapacityRequest(BaseModel):
     transaction_id: str = Field(..., min_length=5)
     carrier_name: str = Field(..., min_length=2)
