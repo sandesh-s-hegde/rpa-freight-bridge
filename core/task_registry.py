@@ -25,13 +25,16 @@ class BackgroundTaskRegistry:
         if not self.tasks:
             return
 
-        logger.info(f"Graceful shutdown: Awaiting {len(self.tasks)} in-flight background task(s)...")
+        logger.info(
+            f"Graceful shutdown: Awaiting {len(self.tasks)} in-flight background task(s)..."
+        )
 
         _, pending = await asyncio.wait(self.tasks, timeout=timeout)
 
         if pending:
             logger.warning(
-                f"Shutdown timeout ({timeout}s) reached. Forcibly cancelling {len(pending)} hanging task(s).")
+                f"Shutdown timeout ({timeout}s) reached. Forcibly cancelling {len(pending)} hanging task(s)."
+            )
 
             # 1. Issue the kill signal to all hanging tasks
             for task in pending:
@@ -40,7 +43,9 @@ class BackgroundTaskRegistry:
             # 2. Allow the event loop a brief moment to process the cancellations
             await asyncio.gather(*pending, return_exceptions=True)
         else:
-            logger.info("All background tasks completed successfully prior to shutdown.")
+            logger.info(
+                "All background tasks completed successfully prior to shutdown."
+            )
 
 
 task_registry = BackgroundTaskRegistry()

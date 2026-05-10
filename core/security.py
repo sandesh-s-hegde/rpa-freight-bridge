@@ -22,8 +22,7 @@ async def verify_api_key(api_key: Optional[str] = Security(api_key_header)) -> s
     if not api_key or not secrets.compare_digest(api_key, expected_key):
         logger.warning("Rejected request: Invalid or missing API Key.")
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid or missing API Key"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid or missing API Key"
         )
     return api_key
 
@@ -47,6 +46,5 @@ async def verify_webhook_signature(request: Request) -> None:
     if not hmac.compare_digest(expected_signature, signature_header):
         logger.error("Rejected webhook: Cryptographic signature mismatch.")
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid payload signature."
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid payload signature."
         )
