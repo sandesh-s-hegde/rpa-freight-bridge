@@ -15,7 +15,7 @@ from core.http_client import HttpClient
 from core.middleware import ProcessTimeMiddleware
 from core.rate_limit import limiter, setup_rate_limiting
 from core.security import verify_api_key
-from core.task_registry import task_registry
+from services.task_registry import task_registry
 from schemas.payloads import CapacityRequest
 from services.orchestrator import OrchestrationService
 from services.uipath_client import UiPathService

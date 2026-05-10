@@ -33,7 +33,6 @@ class OrchestrationService:
         )
         await self.repository.create_audit_record(request, success)
 
-        # Increment custom Prometheus metric
         if success:
             RPA_TASKS_DISPATCHED.labels(carrier_name=request.carrier_name).inc()
 
