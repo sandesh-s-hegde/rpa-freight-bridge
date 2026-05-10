@@ -136,4 +136,4 @@ This project is structured for incremental enterprise scale, moving from a found
 
 ---
 
-> ➡️ **Ecosystem Integration:** This repository acts as the "hands" of the logistics ecosystem. The brain dictating these actions is the **[Digital Capacity Optimizer](https://github.com/sandesh-s-hegde/digital_capacity_optimizer)**, which calculates the multi-modal routing logic and dispatches the webhooks processed by this API.
+> ➡️ **Next Evolution:** With both digital and legacy capacity now fully automated, the ecosystem requires real-time sustainability routing. The architecture has now expanded into the **[ESG Grid Oracle](https://github.com/sandesh-s-hegde/esg_grid_oracle)**. This microservice acts as a live telemetry engine, streaming real-time European grid carbon intensity to ensure all automated freight routing decisions are environmentally optimized.
